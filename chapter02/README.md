@@ -127,3 +127,126 @@ fun call(args: Array<String>) {
     println("Hello ${if (args.size > 0) args[0] else "someone"}!")
 }
 ```
+
+# 2. Class and Property
+
+## 1. Property
+
+클래스의 목적은 데이터를 캡슐화하고 캡슐화한 데이터를 다루는 코드를 한 주체 아래 가두는 것입니다.
+
+자바에서는 데이터를 필드에 저장하고 멤버 필드의 가시성은 보통 비공개로 합니다. 이 때 클래스는 자신을 사용하는 클라이언트가 데이터를 접근하는 통로로 쓸 수 있는 **접근자 메소드**를 제공합니다. 일반적으로 필드를 읽기 위해서는 getter를, 필드를 변경하는 경우 setter를 추가로 제공합니다. 특히, setter의 경우 자신이 받은 값을 검증하거나 필드 변경을 다른 곳에 통지하는 로직을 추가하기도 합니다.
+
+자바에서는 필드와 접근자를 한데 묶어 **프로퍼티**라고 부릅니다. kotlin은 프로퍼티를 언어 기본 기능으로 제공하며 kotlin의 프로퍼티는 자바의 필드와 접근자 메소드를 완전히 대신합니다. 이 때 `val`로 선언한 프로퍼티는 읽기 전용이며, `var`로 선언한 프로퍼티는 변경이 가능합니다.
+
+kotlin에서 프로퍼티를 선언하는 방식은 프로퍼티와 관련 있는 접근자를 선언하는 것입니다. 그를 위해 kotlin은 값을 저장하기 위한 비공개 필드와 그 필드에 값을 저장하기 위한 setter, 값을 읽기 위한 getter로 이루어진 간단한 접근자 구현을 제공합니다.
+
+두 언어의 getter와 setter은 거의 동일한 방식으로 구현되어 있습니다. 다만 예외가 있는데 이른이 `is`로 시작하는 프로퍼티의 getter에는 `get`이 붙지 않고 원래 이름을 그대로 사용하며 setter는 `is` 대신에 `set`으로 바꾼 이름을 사용합니다.
+
+```java
+public class Person {
+    private final String name;
+    private Boolean isMarried;
+
+    public Person(String name, Boolean isMarried) {
+        this.name = name;
+        this.isMarried = isMarried;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Boolean isMarried() {
+        return isMarried;
+    }
+
+    public Boolean setMarried(Boolenan isMarried) {
+        this.isMarried = isMarried;
+    }
+}
+
+public static void main() {
+    Person person = new Person("Java", true);
+
+    System.out.println(person.getName());
+    System.out.println(person.isMarried();
+
+    person.setMarried(false);
+}
+```
+
+```kotlin
+class Person (
+    val name: String,
+    var isMarried: Boolean
+)
+
+fun main() {
+    // new keyword를 사용하지 않고 생성자를 호출합니다.
+    val person = Person("Kotlin", true)
+
+    // 프로퍼티 이름을 직접 사용해도 kotlin이 자동으로 getter를 호출합니다.
+    println(person.name)
+    println(person.isMarried)
+
+    // 프로퍼티의 setter도 이름을 직접 사용할 수 있습니다.
+    person.isMarried = false
+}
+```
+
+대부분의 프로퍼티에는 그 프로퍼티의 값을 저장하기 위한 필드가 있는데 이를 **backing field(뒷받침하는 필드)**라고 부릅니다. 하지만 원한다면 프로퍼티 값을 그 때 그 때 계산할 수도 있는데 이는 커스텀 접근자를 작성하면 가능합니다.
+
+## 2. Custom Getter
+
+직사각형 클래스를 정의하고 자신이 정사각형인지 알려주는 기능을 만드는 예제를 통해 커스텀 접근자를 생성해 보겠습니다.
+
+```kotlin
+class Rectangle(val height: Int, val width: Int) {
+    val isSquare: Boolean
+        get() {
+            return height == width
+        }
+}
+```
+
+위와 같이 `isSquare` 프로퍼티는 자체 값을 저장하는 필드가 없이 자체 구현만을 제공합니다. 이 경우 클라이언트가 프로퍼티에 접근할 때 마다 getter가 프로퍼티 값을 매번 다시 계산합니다.
+
+파타미터가 없는 함수를 정의하는 방식과 커스텀 접근자를 정의하는 방식 중 어느 쪽이 더 나은가 궁금하다면 그 답은 비슷하다고 할 수 있습니다. 차이가 나는 부분은 가동성뿐이며 일반적으로 클래스의 특성을 정의하고 싶다면 프로퍼티로 그 특성을 정의해야 합니다.
+
+## 3. Directory and Package
+
+자바가 모든 클래스를 패키지 단위로 관리하는 것과 같이 kotlin에도 이와 비슷한 개념의 패키지가 있습니다. 모든 `.kt` 파일의 맨 앞에 `package` 문을 넣을 수 있는데 이 경우 그 파일 안에 있는 모든 선언은 해당 패키지에 들어갑니다. 같은 패키지에 속해 있다면 다른 파일에서 정의한 선언일지라도 직접 사용할 수 있습니다. 반면 다른 패키지에 정의한 선언을 사용하려면 import를 통해 선언을 불러와야 합니다. 자바와 동일하게 import는 파일의 맨 앞에 와야 하며 `import` 키워드를 사용합니다.
+
+```kotlin
+// 패키지 이름을 선언합니다.
+package geometry.shapes
+
+// 표준 자바 라이브러리 클래스를 불러옵니다.
+import java.util.Random
+
+class RealRectangle(val height: Int, val width: Int) {
+    val isRealSquare: Boolean
+        get() = height == width
+}
+
+fun createRandomRectangle(): RealRectangle {
+    val random = Random()
+    return RealRectangle(random.nextInt(), random.nextInt())
+}
+```
+
+```kotlin
+package geometry.example
+
+// 이름으로 함수를 불러옵니다.
+import geometry.shapes.createRandomRectangle
+
+fun main() {
+    println(createRandomRectangle().isRealSquare)
+}
+
+```
+
+패키지 이름 뒤에 `.*`를 추가하면 패키지 안의 모든 선언을 불러올 수 있습니다. 하지만 이 경우 패키지 안에 있는 모든 클래스와 최상위 함수, 프로퍼티까지 모두 불러오므로 주의가 필요합니다.
+
+자바에서는 패키지의 구조가 일치하는 디렉터리 계층 구조를 만들고 클래스의 소스코드를 그 클래스가 속한 패키지와 같은 디렉터리에 위치시켜야 합니다. 하지만 kotlin은 여러 클래스를 한 파일에 넣을 수 있고, 파일 이름도 마음대로 정할 수 있습니다. 하지만 대부분의 경우 자바와 같이 패키지별로 디렉터리를 구성하는 편이 좋습니다. 이는 자바 레거시 프로젝트에서 자바 클래스를 kotlin 클래스로 마이그레이션할 때 문제가 발생할 수 있기 때문입니다.
